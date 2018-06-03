@@ -1,5 +1,5 @@
 # GraphQL Example using GoodReads Rest API
-Thank you to https://github.com/mpj for the tutorial and codebase. 
+Thank you to Fun Fun Function & MPJ here https://github.com/mpj and https://tinyurl.com/ydfwtccz for the tutorial and codebase. 
 
 ![screenshot](screenshot.png)
 
