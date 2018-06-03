@@ -1,3 +1,11 @@
+const express = require('express')
+const graphqlHTTP = require('express-graphql')
+const app = express()
+const fetch = require('node-fetch')
+const schema = require('./schema')
+const util = require('util')
+const parseXML = util.promisify(require('xml2js').parseString)
+
 const {
     GraphQLInt,
     GraphQLObjectType,
@@ -6,6 +14,15 @@ const {
     GraphQLList
 } = require('graphql');
 
+
+fetch(
+    'https://www.goodreads.com/author/show.xml?id=4918776&key=yZDgZnQEdaODo3yCxplyxA'
+  )
+  .then(response => response.text())
+  .then(parseXML);
+
+
+
 const BookType = new GraphQLObjectType({
     name: 'Book',
     description: '...',
@@ -13,18 +30,14 @@ const BookType = new GraphQLObjectType({
     fields: () => ({
         title: {
             type: GraphQLString,
-            resolve: (xml, args) => {
-                const title = xml.GoodreadsResponse.book[0].title[0]
-                return title
-            }
-        },
+            resolve: xml => xml.title[0]
+            },
         isbn: {
             type: GraphQLString,
-            resolve: xml => xml.GoodreadsResponse.book[0].isbn[0]
+            resolve: xml => xml.isbn[0]
         }
     })
 }) 
-
 
 const AuthorType = new GraphQLObjectType({
     name: 'Author',
@@ -39,10 +52,9 @@ const AuthorType = new GraphQLObjectType({
             type: new GraphQLList(BookType),
             resolve: xml => 
                 xml.GoodreadsResponse.author[0].books[0].book
-
-        }
+            }
+        })
     })
-})
 
 module.exports = new GraphQLSchema ({
     query: new GraphQLObjectType({
@@ -55,11 +67,10 @@ module.exports = new GraphQLSchema ({
                 args: {
                     id: { type: GraphQLInt }
                 }, 
-                resolve: (root, args) => fetch(
-                    `https://www.goodreads.com/author/show.xml?id=${args.id}&key=yZDgZnQEdaODo3yCxplyxA`
-                )
-                .then(response => response.text())
-                .then(parseXML)
+                resolve: (root, args) => 
+                fetch(`https://www.goodreads.com/author/show.xml?id=${args.id}&key=yZDgZnQEdaODo3yCxplyxA`)
+                    .then(response => response.text())
+                    .then(parseXML)
             }
         })
     })
